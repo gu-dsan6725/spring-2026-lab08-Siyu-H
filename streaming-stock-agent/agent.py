@@ -2,7 +2,7 @@
 
 import logging
 import json
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 from pathlib import Path
 import yfinance as yf
 from datetime import datetime, timedelta
@@ -84,6 +84,91 @@ def _get_stock_price(
         return {
             "error": str(e),
             "ticker": ticker.upper()
+        }
+
+
+def _format_market_cap_display(
+    market_cap: Any
+) -> str:
+    """Format raw market cap number as a short human-readable string (e.g. 2.8T)."""
+    if market_cap is None:
+        return "N/A"
+    try:
+        value = float(market_cap)
+    except (TypeError, ValueError):
+        return str(market_cap)
+    abs_v = abs(value)
+    if abs_v >= 1e12:
+        return f"{value / 1e12:.1f}T"
+    if abs_v >= 1e9:
+        return f"{value / 1e9:.1f}B"
+    if abs_v >= 1e6:
+        return f"{value / 1e6:.1f}M"
+    return f"{value:,.0f}"
+
+
+def _compare_stocks(
+    symbol1: str,
+    symbol2: str
+) -> Dict[str, Any]:
+    """Compare two stocks side-by-side.
+
+    Args:
+        symbol1: First stock symbol (e.g., 'AAPL')
+        symbol2: Second stock symbol (e.g., 'MSFT')
+
+    Returns:
+        Dictionary with comparison data for both stocks
+    """
+    try:
+        s1 = symbol1.upper().strip()
+        s2 = symbol2.upper().strip()
+
+        price1 = _get_stock_price(s1)
+        price2 = _get_stock_price(s2)
+
+        if price1.get("error"):
+            return {
+                "error": price1["error"],
+                "ticker": s1,
+            }
+        if price2.get("error"):
+            return {
+                "error": price2["error"],
+                "ticker": s2,
+            }
+
+        info1 = _get_company_info(s1)
+        info2 = _get_company_info(s2)
+
+        name1 = price1.get("name") or info1.get("name") or s1
+        name2 = price2.get("name") or info2.get("name") or s2
+
+        return {
+            "comparison": {
+                "symbol1": s1,
+                "symbol2": s2,
+                "stock1": {
+                    "symbol": s1,
+                    "current_price": price1["current_price"],
+                    "company_name": name1,
+                    "market_cap": _format_market_cap_display(info1.get("market_cap")),
+                },
+                "stock2": {
+                    "symbol": s2,
+                    "current_price": price2["current_price"],
+                    "company_name": name2,
+                    "market_cap": _format_market_cap_display(info2.get("market_cap")),
+                },
+            }
+        }
+
+    except Exception as e:
+        logger.error(f"Error comparing {symbol1} and {symbol2}: {e}")
+        return {
+            "error": str(e),
+            "symbol1": symbol1.upper().strip(),
+            "symbol2": symbol2.upper().strip(),
         }
 
 
@@ -230,7 +315,30 @@ STOCK_TOOLS = [
             "required": ["ticker"]
         },
         "function": _get_company_info
-    }
+    },
+    {
+        "name": "compare_stocks",
+        "description": (
+            "Compare two stocks side-by-side using current price, company name, and market cap. "
+            "Use when the user asks to compare two tickers, which stock is better, or to contrast "
+            "two companies (e.g. 'Compare AAPL and MSFT', 'Tesla vs Ford')."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "symbol1": {
+                    "type": "string",
+                    "description": "First stock symbol to compare (e.g. AAPL)",
+                },
+                "symbol2": {
+                    "type": "string",
+                    "description": "Second stock symbol to compare (e.g. MSFT)",
+                },
+            },
+            "required": ["symbol1", "symbol2"],
+        },
+        "function": _compare_stocks,
+    },
 ]
 
 

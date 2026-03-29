@@ -1,0 +1,59 @@
+Testing /ping endpoint...
+Status: 200
+Response: {'status': 'ok'}
+
+============================================================
+MULTI-TURN CONVERSATION TEST
+============================================================
+
+Session: test_session_123
+Query: What is the current price of Apple stock?
+------------------------------------------------------------
+
+[Tool calls starting...]
+
+[Calling tool: get_stock_price with args {'ticker': 'AAPL'}]
+[Tool calls completed]
+
+The current price of Apple Inc. (AAPL) is **$248.80**, as of March 29, 2026 (market closed).  
+
+- **Previous Close**: $252.89  
+- **Change**: -$4.09 (1.62% decrease)  
+
+This data is sourced from Yahoo Finance and may have a slight delay. Would you like additional details about Apple's stock?
+[Done]
+
+============================================================
+
+Session: test_session_123
+Query: How has it changed in the last 30 days?
+------------------------------------------------------------
+
+[Tool calls starting...]
+
+[Calling tool: get_stock_history with args {'days': 30, 'ticker': 'AAPL'}]
+[Tool calls completed]
+
+Over the past 30 days (February 27, 2026 – March 27, 2026), Apple Inc. (AAPL) stock fell from **$264.18** to **$248.80**, a **-5.82% decline** (-$15.38).  
+
+**Key details:**  
+- **30-day high**: $272.81  
+- **30-day low**: $246.00  
+- **Average daily volume**: ~42.1 million shares  
+
+The stock has traded between $246.00 and $272.81 during this period. Would you like to see a chart or additional analysis?  
+
+*Data source: Yahoo Finance (delayed)*
+[Done]
+
+============================================================
+
+Session: test_session_123
+Query: What about Tesla?
+------------------------------------------------------------
+
+[Error: litellm.RateLimitError: RateLimitError: GroqException - {"error":{"message":"Rate limit reached for model `qwen/qwen3-32b` in organization `org_01kj47yp78e609zkx90eg9vg37` service tier `on_demand` on tokens per minute (TPM): Limit 6000, Used 5811, Requested 1309. Please try again in 11.2s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+]
+
+============================================================
+

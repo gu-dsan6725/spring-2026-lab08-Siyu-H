@@ -3,6 +3,7 @@
 import logging
 import os
 import json
+from pathlib import Path
 from typing import AsyncGenerator
 from contextlib import asynccontextmanager
 
@@ -20,7 +21,7 @@ from agent import (
 )
 
 
-load_dotenv()
+load_dotenv(Path(__file__).resolve().parent / ".env")
 
 logging.basicConfig(
     level=logging.INFO,
